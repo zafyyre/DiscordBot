@@ -18,10 +18,11 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
+    if not check_dropbox.is_running():
+        check_dropbox.start()
     print(f'{bot.user} is online!')
-    check_dropbox.start()
 
-@tasks.loop(seconds=1)  # Check Dropbox every 10 seconds
+@tasks.loop(seconds=10)  # Check Dropbox every 10 seconds
 async def check_dropbox():
     print("Checking for new videos in Dropbox...")
     channel = bot.get_channel(CHANNEL_ID)
@@ -50,7 +51,6 @@ async def check_dropbox():
     except Exception as e:
         print(f"Error uploading file to Discord: {e}")
 
-
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -63,10 +63,10 @@ async def on_message(message):
     print(f"{username} said: '{user_message}' in the '{channel}' channel.")
 
     if user_message.startswith("?!"):
-        user_message = user_message[2:]
+        user_message = user_message[2:]  # Remove the first two characters
         await send_message(message, user_message, is_private=True)
     elif user_message.startswith("&"):
-        user_message = user_message[1:]
+        user_message = user_message[1:]  # Remove the first character
         await send_message(message, user_message, is_private=False)
 
 async def send_message(message, user_message, is_private):
@@ -77,7 +77,10 @@ async def send_message(message, user_message, is_private):
         if not response:
             response = "I couldn't process that command. Use '&help' for more information."
         if is_private:
-            await message.author.send(response)
+            try:
+                await message.author.send(response)
+            except discord.Forbidden:
+                await message.channel.send(f"{message.author.mention}, I couldn't send you a DM. Please enable DMs from server members.")
         else:
             await message.channel.send(response)
     except Exception as e:
