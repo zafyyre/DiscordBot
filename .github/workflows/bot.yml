@@ -29,10 +29,7 @@ jobs:
           echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> $GITHUB_ENV
           echo "CHANNEL_ID=${{ secrets.CHANNEL_ID }}" >> $GITHUB_ENV
           echo "GOOGLE_DRIVE_FOLDER_ID=${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}" >> $GITHUB_ENV
-
-      - name: Create credentials.json
-        run: |
-          echo "${{ secrets.GOOGLE_DRIVE_CREDENTIALS_JSON }}" > credentials.json
+          echo "GOOGLE_DRIVE_CREDENTIALS=${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}" >> $GITHUB_ENV
 
       - name: Run the bot
         run: |
