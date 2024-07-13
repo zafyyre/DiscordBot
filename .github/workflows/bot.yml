@@ -5,8 +5,6 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  schedule:
-    - cron: '*/15 * * * *'  # This runs the workflow every 15 minutes
 
 jobs:
   build:
