@@ -1,10 +1,8 @@
 import dropbox
-from dropbox.oauth import DropboxOAuth2FlowNoRedirect
 from dotenv import load_dotenv
 from io import BytesIO
 import os
 import requests
-import json
 
 load_dotenv()
 
