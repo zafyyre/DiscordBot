@@ -1,15 +1,38 @@
 import dropbox
+from dropbox.oauth import DropboxOAuth2FlowNoRedirect
 from dotenv import load_dotenv
 from io import BytesIO
 import os
+import requests
+import json
 
 load_dotenv()
 
-DROPBOX_ACCESS_TOKEN = os.getenv('DROPBOX_ACCESS_TOKEN')
+DROPBOX_APP_KEY = os.getenv('DROPBOX_APP_KEY')
+DROPBOX_APP_SECRET = os.getenv('DROPBOX_APP_SECRET')
+DROPBOX_REFRESH_TOKEN = os.getenv('DROPBOX_REFRESH_TOKEN')
 DROPBOX_FOLDER_PATH = os.getenv('DROPBOX_FOLDER_PATH')
 
+def refresh_access_token():
+    url = "https://api.dropbox.com/oauth2/token"
+    data = {
+        'grant_type': 'refresh_token',
+        'refresh_token': DROPBOX_REFRESH_TOKEN,
+        'client_id': DROPBOX_APP_KEY,
+        'client_secret': DROPBOX_APP_SECRET
+    }
+    response = requests.post(url, data=data)
+    if response.status_code == 200:
+        tokens = response.json()
+        access_token = tokens['access_token']
+        print(f"Refreshed access token: {access_token[:4]}...")  # Print the first few characters of the token
+        return access_token
+    else:
+        raise Exception("Failed to refresh access token: " + response.text)
+
 def authenticate_dropbox():
-    return dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+    access_token = refresh_access_token()
+    return dropbox.Dropbox(access_token)
 
 def get_latest_video(dropbox_folder_path):
     dbx = authenticate_dropbox()

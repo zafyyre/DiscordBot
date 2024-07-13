@@ -2,9 +2,9 @@ name: Run Discord Bot
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -24,11 +24,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Debug Environment Variables
+        run: |
+          echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}"
+          echo "CHANNEL_ID=${{ secrets.CHANNEL_ID }}"
+          echo "DROPBOX_REFRESH_TOKEN=${{ secrets.DROPBOX_REFRESH_TOKEN }}"
+          echo "DROPBOX_APP_KEY=${{ secrets.DROPBOX_APP_KEY }}"
+          echo "DROPBOX_APP_SECRET=${{ secrets.DROPBOX_APP_SECRET }}"
+          echo "DROPBOX_FOLDER_PATH=${{ secrets.DROPBOX_FOLDER_PATH }}"
+
       - name: Run the bot
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+          DROPBOX_REFRESH_TOKEN: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
+          DROPBOX_APP_KEY: ${{ secrets.DROPBOX_APP_KEY }}
+          DROPBOX_APP_SECRET: ${{ secrets.DROPBOX_APP_SECRET }}
           DROPBOX_FOLDER_PATH: ${{ secrets.DROPBOX_FOLDER_PATH }}
         run: |
           python main.py
