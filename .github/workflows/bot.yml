@@ -19,17 +19,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.9.12'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run bot
-        env:
-          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-          MEDAL_CLIPS_DIR: ${{ secrets.MEDAL_CLIPS_DIR }}
-        run: |
-          python main.py
+    - name: Run the bot
+      env:
+        DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+        CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+        DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+        DROPBOX_FOLDER_PATH: ${{ secrets.DROPBOX_FOLDER_PATH }}
+      run: |
+        python main.py
