@@ -21,7 +21,7 @@ async def on_ready():
     print(f'{bot.user} is online!')
     check_dropbox.start()
 
-@tasks.loop(seconds=10)  # Check Dropbox every 10 seconds
+@tasks.loop(seconds=1)  # Check Dropbox every 10 seconds
 async def check_dropbox():
     print("Checking for new videos in Dropbox...")
     channel = bot.get_channel(CHANNEL_ID)
