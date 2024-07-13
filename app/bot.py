@@ -1,7 +1,7 @@
 import discord
 import os
 from discord.ext import commands, tasks
-from app.dropbox_handler import get_latest_video, get_file_content_from_dropbox, delete_from_dropbox
+from app.video_handler import get_latest_video, get_file_content_from_google_drive, delete_file_from_google_drive
 from app.responses import handle_response
 from dotenv import load_dotenv
 
@@ -9,7 +9,12 @@ load_dotenv()
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
-DROPBOX_FOLDER_PATH = os.getenv('DROPBOX_FOLDER_PATH')
+GOOGLE_DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
+
+# Debug: Print the environment variables
+print(f"DISCORD_TOKEN: {DISCORD_TOKEN[:10]}...")  # Only print a part for security
+print(f"CHANNEL_ID: {CHANNEL_ID}")
+print(f"GOOGLE_DRIVE_FOLDER_ID: {GOOGLE_DRIVE_FOLDER_ID}")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -18,34 +23,34 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    if not check_dropbox.is_running():
-        check_dropbox.start()
+    if not check_google_drive.is_running():
+        check_google_drive.start()
     print(f'{bot.user} is online!')
 
-@tasks.loop(seconds=1)  # Check Dropbox every 10 seconds
-async def check_dropbox():
-    print("Checking for new videos in Dropbox...")
+@tasks.loop(seconds=10)  # Check Google Drive every 10 seconds
+async def check_google_drive():
+    print("Checking for new videos in Google Drive...")
     channel = bot.get_channel(CHANNEL_ID)
     if channel is None:
         print("Discord channel not found.")
         return
 
-    latest_file = get_latest_video(DROPBOX_FOLDER_PATH)
+    latest_file = get_latest_video()
     if latest_file is None:
-        print("No new videos found in Dropbox.")
+        print("No new videos found in Google Drive.")
         return
 
-    file_content = get_file_content_from_dropbox(latest_file)
+    file_content = get_file_content_from_google_drive(latest_file['id'])
     
     try:
         if file_content:
             file_content.seek(0)
-            print(f"Uploading {latest_file.name} to Discord channel {CHANNEL_ID}...")
-            await channel.send(file=discord.File(fp=file_content, filename=latest_file.name))
-            print(f"Uploaded {latest_file.name} to Discord.")
+            print(f"Uploading {latest_file['name']} to Discord channel {CHANNEL_ID}...")
+            await channel.send(file=discord.File(fp=file_content, filename=latest_file['name']))
+            print(f"Uploaded {latest_file['name']} to Discord.")
                 
-            delete_from_dropbox(latest_file)
-            print(f"Deleted file {latest_file.name} from Dropbox.")
+            delete_file_from_google_drive(latest_file['id'])
+            print(f"Deleted file {latest_file['id']} from Google Drive.")
         else:
             print(f"Failed to read the file content.")
     except Exception as e:
