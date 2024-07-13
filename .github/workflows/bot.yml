@@ -31,6 +31,10 @@ jobs:
           echo "GOOGLE_DRIVE_FOLDER_ID=${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}" >> $GITHUB_ENV
           echo "GOOGLE_DRIVE_CREDENTIALS=${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}" >> $GITHUB_ENV
 
+      - name: Create token.json
+        run: |
+          echo "${{ secrets.GOOGLE_DRIVE_TOKEN_BASE64 }}" | base64 --decode > token.json
+
       - name: Run the bot
         run: |
           python main.py
