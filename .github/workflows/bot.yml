@@ -5,6 +5,8 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    - cron: '0 */6 * * *'  # This runs the workflow every 6 hours
 
 jobs:
   build:
@@ -38,4 +40,3 @@ jobs:
       - name: Run the bot
         run: |
           python main.py
-          # Test
