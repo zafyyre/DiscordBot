@@ -1,10 +1,10 @@
 import os
 import io
-import json
+import time
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
+from google.auth.transport.requests import Request
 from googleapiclient.http import MediaIoBaseDownload
 
 # If modifying these SCOPES, delete the file token.json.
@@ -18,8 +18,7 @@ def authenticate_google_drive():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
@@ -31,23 +30,36 @@ def get_latest_video():
     
     folder_id = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
     query = f"'{folder_id}' in parents and mimeType='application/vnd.google-apps.folder'"
-    results = service.files().list(q=query, fields="files(id, name)").execute()
+    
+    try:
+        results = service.files().list(q=query, fields="files(id, name)").execute()
+    except Exception as e:
+        print(f"Error fetching folder contents: {e}")
+        return None
+    
     clips_folder = next((item for item in results.get('files', []) if item['name'] == 'Clips'), None)
-
     if not clips_folder:
         print('Clips folder not found.')
         return None
 
     query = f"'{clips_folder['id']}' in parents and mimeType='application/vnd.google-apps.folder'"
-    results = service.files().list(q=query, fields="files(id, name)").execute()
+    try:
+        results = service.files().list(q=query, fields="files(id, name)").execute()
+    except Exception as e:
+        print(f"Error fetching game folders: {e}")
+        return None
+
     game_folders = results.get('files', [])
 
     video_files = []
     for game_folder in game_folders:
         game_folder_id = game_folder['id']
         game_query = f"'{game_folder_id}' in parents and mimeType='video/mp4'"
-        game_results = service.files().list(q=game_query, fields="files(id, name, createdTime)").execute()
-        video_files.extend(game_results.get('files', []))
+        try:
+            game_results = service.files().list(q=game_query, fields="files(id, name, createdTime)").execute()
+            video_files.extend(game_results.get('files', []))
+        except Exception as e:
+            print(f"Error fetching videos from game folder {game_folder['name']}: {e}")
 
     if not video_files:
         print('No video files found.')

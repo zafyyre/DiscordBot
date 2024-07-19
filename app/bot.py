@@ -1,5 +1,6 @@
 import discord
 import os
+import time
 from discord.ext import commands, tasks
 from app.video_handler import get_latest_video, get_file_content_from_google_drive, delete_file_from_google_drive
 from app.responses import handle_response
@@ -35,7 +36,16 @@ async def check_google_drive():
         print("Discord channel not found.")
         return
 
-    latest_file = get_latest_video()
+    retries = 3
+    latest_file = None
+    for attempt in range(retries):
+        latest_file = get_latest_video()
+        if latest_file:
+            break
+        else:
+            print(f"Attempt {attempt + 1} failed, retrying in 5 seconds...")
+            time.sleep(5)
+
     if latest_file is None:
         print("No new videos found in Google Drive.")
         return
