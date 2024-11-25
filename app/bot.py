@@ -82,6 +82,20 @@ async def on_message(message):
                 # Extract the channel ID from the reply message
                 target_channel_id = int(message.content.strip())
 
+                # Check if the reply mentions a user or contains a user ID
+                content = message.content.strip()
+                if content.startswith("<@") and content.endswith(">"):  # Mention format
+                    user_id = int(content[2:-1])
+                else:
+                    # Otherwise, assume it's a raw user ID
+                    user_id = int(content)
+
+                # Fetch the user
+                target_user = await bot.fetch_user(user_id)
+                if not target_user:
+                    await message.reply("Invalid user ID or the user doesn't exist.")
+                    return
+                
                 # Fetch the target channel
                 target_channel = bot.get_channel(target_channel_id)
                 if not target_channel:
