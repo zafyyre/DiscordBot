@@ -70,6 +70,39 @@ async def check_google_drive():
 async def on_message(message):
     if message.author == bot.user:
         return  # Prevent bot from responding to itself
+    
+    # Check if the message is a reply to the bot
+    if message.reference:
+        # Fetch the original message
+        original_message = await message.channel.fetch_message(message.reference.message_id)
+        
+        # Check if the original message was sent by the bot and has an attachment
+        if original_message.author == bot.user and original_message.attachments:
+            try:
+                # Extract the channel ID from the reply message
+                target_channel_id = int(message.content.strip())
+
+                # Fetch the target channel
+                target_channel = bot.get_channel(target_channel_id)
+                if not target_channel:
+                    await message.reply("Invalid channel ID or I don't have access to that channel.")
+                    return
+                
+                # Get the attachment URL and filename
+                attachment = original_message.attachments[0]
+                await target_channel.send(
+                    f"Forwarded by {message.author.mention}",
+                    file=await attachment.to_file()
+                )
+                await message.reply(f"Clip forwarded to <#{target_channel_id}>.")
+            except ValueError:
+                await message.reply("Please provide a valid numeric channel ID.")
+            except Exception as e:
+                await message.reply(f"Failed to forward clip: {e}")
+        else:
+            await message.reply("You can only reply to a bot message with a clip to forward it.")
+    
+    await bot.process_commands(message)
 
     username = str(message.author)
     user_message = str(message.content)
