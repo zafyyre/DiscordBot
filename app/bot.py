@@ -99,8 +99,6 @@ async def on_message(message):
                 await message.reply("Please provide a valid numeric channel ID.")
             except Exception as e:
                 await message.reply(f"Failed to forward clip: {e}")
-        else:
-            await message.reply("You can only reply to a bot message with a clip to forward it.")
     
     await bot.process_commands(message)
 
